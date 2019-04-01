@@ -66,5 +66,6 @@ cursor.execute('create table if not exists downtime(line_code text, signal_type 
 connection.commit()
 connection.close()
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+def main():
     application.run(flask_app, host = "0.0.0.0", port = "8080")
