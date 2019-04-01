@@ -1,0 +1,94 @@
+<html>
+<head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js'></script>
+        <style>
+            table {
+                font-family: Consolas, monospace;
+            }
+        </style>
+</head>
+<body ng-app='App' ng-controller='AppController'>
+<script type="text/javascript" charset="utf-8">
+    angular.module('App', []).controller('AppController', ($scope, $http, $sce) => {
+        let socket = io.connect(`http://${document.domain}:${location.port}`);
+    
+        socket.on('connect', function () {
+            $http.get(`http://${document.domain}:${location.port}/24hours`).then((response) => {
+                let events = {};
+                for (let event of response.data) {
+                    let obj = parseEvent(event);
+                    events[obj.rowid] = obj;
+                }
+                $scope.events = events;
+            });
+        });
+
+        socket.on('message', function (message) {
+            let obj = parseEvent(JSON.parse(message));
+            if (obj.event_stop > 0 && $scope.events[obj.rowid] && $scope.events[obj.rowid].intervalHalndle) {
+                clearInterval($scope.events[obj.rowid].intervalHalndle);
+                delete $scope.events[obj.rowid].intervalHalndle;
+            }
+            $scope.events[obj.rowid] = obj;
+            $scope.$apply();
+        });
+
+        function now() {
+            let t = new Date();
+            return Math.floor((t.getTime() + t.getTimezoneOffset() * 60000) / 1000);            
+        }
+
+        function parseEvent(event) {
+            let obj = { rowid: event[0], line_code: event[1], event_type: event[2], event_start: event[3], event_stop: event[4], event_comment: event[5] };
+            obj.start = reprDate(obj.event_start);
+            if (obj.event_stop > 0) {
+                obj.stop = reprDate(obj.event_stop);
+                obj.downtime = obj.event_stop - obj.event_start;
+            } else {
+                obj.downtime = now() - obj.event_start;
+                obj.intervalHalndle = setInterval(function () { intervalClosure(obj); }, 1000);
+            }
+            return obj;
+        }
+
+        function reprDate(t) {
+            t = (t - new Date().getTimezoneOffset() * 60) * 1000;
+            let d = new Date(t);
+            return [`${ zf(d.getDay()) }/${ zf(d.getMonth()) }/${ d.getFullYear() }`, `${ zf(d.getHours()) }:${ zf(d.getMinutes()) }:${ zf(d.getSeconds()) }`];
+        }
+
+        $scope.reprTime = (t) => {
+            let hours = Math.floor(t / 3600);
+            t -= hours * 3600;
+            let minutes = Math.floor(t / 60);
+            t -= minutes * 60;
+            let seconds = t;
+            return `${ zf(hours) }:${ zf(minutes) }:${ zf(seconds) }`;
+        }
+
+        function intervalClosure(obj) {
+            obj.downtime = now() - obj.event_start;
+            $scope.$apply();
+        }
+
+        function zf(num) {
+            return new String(num).padStart(2, 0);
+        }
+    });
+</script>
+
+<table width='100%'>
+    <tr ng-repeat='event in events'>
+        <td>{{ event.line_code.toUpperCase() }}</td>
+        <td>{{ event.start[0] }} <b>{{ event.start[1] }}</b></td>
+        <td ng-if='event.event_stop > 0'>{{ event.stop[0] }} <b>{{ event.stop[1] }}</b></td>
+        <td ng-if='event.event_stop == 0' style='color: red'><b>Ongoing...</b></td>
+        <td><b ng-if='event.event_stop == 0' style='color: red'>{{ reprTime(event.downtime) }}</b><span ng-if='event.event_stop > 0'>{{ reprTime(event.downtime) }}</span></td>
+        <td>{{ event.event_comment }}</td>
+    </tr>
+</table>
+<div >{{ event }}</div>
+
+</body>
+</html>
