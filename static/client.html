@@ -36,8 +36,10 @@
 
         function now() {
             let t = new Date();
+            t = Math.floor(t.getTime() / 1000 - t.getTimezoneOffset() * 60)
+            return t;
             //return Math.floor((d.getTime()) / 1000);            
-            return Math.floor((t.getTime() + t.getTimezoneOffset() * 60000) / 1000);            
+            //return Math.floor((t.getTime() + t.getTimezoneOffset() * 60000) / 1000);            
         }
 
         function parseEvent(event) {
