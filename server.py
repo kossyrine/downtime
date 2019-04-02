@@ -2,13 +2,17 @@
 
 from flask import Flask
 from flask_socketio import SocketIO
-from datetime import datetime
+# from datetime import datetime
 
+import time
 import sqlite3
 import json
 
 flask_app = Flask(__name__)
 app = SocketIO(flask_app)
+
+def now():
+    return int(time.time())
 
 @flask_app.route('/')
 def index():
@@ -25,7 +29,8 @@ def wipe():
 
 @flask_app.route('/24hours')
 def dump():
-    shift = int(datetime.utcnow().timestamp()) - 24 * 60 * 60
+    ##shift = int(datetime.utcnow().timestamp()) - 24 * 60 * 60
+    shift = now() - 24 * 60 * 60
 
     connection = sqlite3.connect('timestamps.db')
     cursor = connection.cursor()
@@ -38,7 +43,8 @@ def dump():
 
 @flask_app.route('/signal/<string:line_code>/<string:signal_type>')
 def signal(line_code, signal_type):
-    timestamp = int(datetime.utcnow().timestamp())
+    ##timestamp = int(datetime.utcnow().timestamp())
+    timestamp = now()
 
     connection = sqlite3.connect('timestamps.db')
     cursor = connection.cursor()
