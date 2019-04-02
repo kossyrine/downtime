@@ -54,7 +54,7 @@
         }
 
         function reprDate(t) {
-            // t = (t - new Date().getTimezoneOffset() * 60) * 1000;
+            t = (t - new Date().getTimezoneOffset() * 60) * 1000;
             // t = (t) * 1000;
             let d = new Date(t);
             return [`${ zf(d.getDay()) }/${ zf(d.getMonth()) }/${ d.getFullYear() }`, `${ zf(d.getHours()) }:${ zf(d.getMinutes()) }:${ zf(d.getSeconds()) }`];
