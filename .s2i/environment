@@ -1,2 +1,0 @@
-APP_FILE=wsgi.py
-APP_CONFIG=config.py
