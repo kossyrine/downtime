@@ -1,3 +1,5 @@
+#!/usr/bin python3.6
+
 from flask import Flask
 from flask_socketio import SocketIO
 from datetime import datetime
@@ -67,4 +69,4 @@ connection.commit()
 connection.close()
 
 if __name__ == "__main__":
-    app.run(flask_app, host = "0.0.0.0", port = "8080")
+    app.run(flask_app, host = "0.0.0.0", port = "8010")
