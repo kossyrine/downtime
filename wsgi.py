@@ -1,4 +1,4 @@
-#!/usr/bin python3.6
+#!/usr/bin/python3.6
 
 from flask import Flask
 from flask_socketio import SocketIO
