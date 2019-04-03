@@ -29,13 +29,11 @@ def wipe():
 
 @flask_app.route('/24hours')
 def dump():
-    ##shift = int(datetime.utcnow().timestamp()) - 24 * 60 * 60
     shift = now() - 24 * 60 * 60
 
     connection = sqlite3.connect('timestamps.db')
     cursor = connection.cursor()
     cursor.execute(f'select rowid, * from downtime where event_start > {shift};')
-    ##cursor.execute(f'select rowid, * from downtime where event_start > {shift} order by event_start desc limit 10;')
     resp = cursor.fetchall()
     connection.close()
     

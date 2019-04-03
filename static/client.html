@@ -111,7 +111,7 @@
         <td ng-if='event.event_stop > 0'><small>{{ event.stop[0] }}</small> <b>{{ event.stop[1] }}</b></td>
         <td ng-if='event.event_stop == 0' style='color: red'><b>Ongoing...</b></td>
         <td><b ng-if='event.event_stop == 0' style='color: red'>{{ reprTime(event.downtime) }}</b><span ng-if='event.event_stop > 0'>{{ reprTime(event.downtime) }}</span></td>
-        <td><input type='text' ng-model='event.event_comment' ng-change='update(event.rowid, event.event_comment)' /></td>
+        <td><input type='text' ng-model='event.event_comment' ng-blur='update(event.rowid, event.event_comment)' /></td>
         <!--<td><button ng-click='update(event.rowid, event.event_comment)'>Update</button></td>-->
         <td><button ng-click='delete(event.rowid)'>Delete</button></td>
     </tr>
