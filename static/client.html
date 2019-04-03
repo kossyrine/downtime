@@ -11,7 +11,7 @@
 <body ng-app='App' ng-controller='AppController'>
 <script type="text/javascript" charset="utf-8">
     angular.module('App', []).controller('AppController', ($scope, $http, $sce) => {
-        let socket = io.connect(`ws://${ document.domain }:${ location.port }`);
+        let socket = io.connect(`http://${ document.domain }:${ location.port }`);
     
         socket.on('connect', function () {
             $http.get(`http://${ document.domain }:${ location.port }/24hours`).then((response) => {
