@@ -53,7 +53,7 @@ def signal(line_code, signal_type):
     resp = cursor.fetchone()
 
     if resp == None or resp[4] != 0:
-        cursor.execute(f'insert into downtime values("{line_code}", "{signal_type}", {timestamp}, 0, "No comment");')
+        cursor.execute(f'insert into downtime values("{line_code}", "{signal_type}", {timestamp}, 0, "-");')
         cursor.execute(f'select rowid, * from downtime where line_code = "{line_code}" and signal_type = "{signal_type}" order by rowid desc limit 1;')
         resp = cursor.fetchone()
     else:
@@ -61,6 +61,32 @@ def signal(line_code, signal_type):
         cursor.execute(f'select rowid, * from downtime where line_code = "{line_code}" and signal_type = "{signal_type}" and rowid = {resp[0]};')
         resp = cursor.fetchone()
 
+    connection.commit()
+    connection.close()
+
+    app.send(json.dumps(resp))
+
+    return '200'
+
+@flask_app.route('/delete/<string:rowid>')
+def delete(rowid):
+    connection = sqlite3.connect('timestamps.db')
+    cursor = connection.cursor()
+    cursor.execute(f'delete from downtime where rowid = {rowid};')
+    connection.commit()
+    connection.close()
+    
+    app.send(f'delete {rowid}')
+    
+    return '200'
+
+@flask_app.route('/update/<string:rowid>/<string:comment>')
+def update(rowid, comment):
+    connection = sqlite3.connect('timestamps.db')
+    cursor = connection.cursor()
+    cursor.execute(f'update downtime set event_comment = "{comment}" where rowid = {rowid};')
+    cursor.execute(f'select rowid, * from downtime where rowid = {rowid};')
+    resp = cursor.fetchone()
     connection.commit()
     connection.close()
 

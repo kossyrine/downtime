@@ -15,48 +15,54 @@
     
         socket.on('connect', function () {
             $http.get(`http://${ document.domain }:${ location.port }/24hours`).then((response) => {
-                let events = {};
+                $scope.events = {};
                 for (let event of response.data) {
                     let obj = parseEvent(event);
-                    events[obj.rowid] = obj;
+                    $scope.events[obj.rowid] = obj;
                 }
-                $scope.events = events;
             });
         });
 
         socket.on('message', function (message) {
-            let obj = parseEvent(JSON.parse(message));
-            if (obj.event_stop > 0 && $scope.events[obj.rowid] && $scope.events[obj.rowid].intervalHalndle) {
-                clearInterval($scope.events[obj.rowid].intervalHalndle);
-                delete $scope.events[obj.rowid].intervalHalndle;
+            // console.log(message);
+            if (message.startsWith('delete')) {
+                let rowid = message.split(' ')[1];
+                if ($scope.events[rowid] && $scope.events[rowid].intervalHandle) {
+                    clearInterval($scope.events[rowid].intervalHandle);
+                }
+                delete $scope.events[rowid];
+            } else {
+                let obj = parseEvent(JSON.parse(message));
+                $scope.events[obj.rowid] = obj;
             }
-            $scope.events[obj.rowid] = obj;
             $scope.$apply();
         });
 
         function now() {
-            //let t = new Date();
-            //t = Math.floor(t.getTime() / 1000 - t.getTimezoneOffset() * 60)
             return Math.floor(new Date().getTime() / 1000);
-            //return Math.floor((d.getTime()) / 1000);            
-            //return Math.floor((t.getTime() + t.getTimezoneOffset() * 60000) / 1000);            
         }
 
         function parseEvent(event) {
             let obj = { rowid: event[0], line_code: event[1], event_type: event[2], event_start: event[3], event_stop: event[4], event_comment: event[5] };
             obj.start = reprDate(obj.event_start);
+
+            if ($scope.events[obj.rowid] && $scope.events[obj.rowid].intervalHandle) {
+                clearInterval($scope.events[obj.rowid].intervalHandle);
+                delete $scope.events[obj.rowid].intervalHandle;
+            }
+
             if (obj.event_stop > 0) {
                 obj.stop = reprDate(obj.event_stop);
                 obj.downtime = obj.event_stop - obj.event_start;
             } else {
                 obj.downtime = now() - obj.event_start;
-                obj.intervalHalndle = setInterval(function () { intervalClosure(obj); }, 1000);
+                obj.intervalHandle = setInterval(function () { intervalClosure(obj); }, 1000);
             }
+
             return obj;
         }
 
         function reprDate(t) {
-            //t = (t - new Date().getTimezoneOffset() * 60) * 1000;
             t = (t) * 1000;
             let d = new Date(t);
             return [`${ zf(d.getDay()) }/${ zf(d.getMonth()) }/${ d.getFullYear() }`, `${ zf(d.getHours()) }:${ zf(d.getMinutes()) }:${ zf(d.getSeconds()) }`];
@@ -79,17 +85,35 @@
         function zf(num) {
             return new String(num).padStart(2, 0);
         }
+
+        // ---
+
+        $scope.delete = function (rowid) {
+            $http.get(`http://${ document.domain }:${ location.port }/delete/${ rowid }`).then((response) => {
+                if (response.data === '200') {
+                }
+            });
+        };
+
+        $scope.update = function (rowid, comment) {
+            $http.get(`http://${ document.domain }:${ location.port }/update/${ rowid }/${ encodeURI(comment) }`).then((response) => {
+                if (response.data === '200') {
+                }
+            });
+        };
     });
 </script>
 
 <table width='100%'>
     <tr ng-repeat='event in events'>
         <td>{{ event.line_code.toUpperCase() }}</td>
-        <td>{{ event.start[0] }} <b>{{ event.start[1] }}</b></td>
-        <td ng-if='event.event_stop > 0'>{{ event.stop[0] }} <b>{{ event.stop[1] }}</b></td>
+        <td><small>{{ event.start[0] }}</small> <b>{{ event.start[1] }}</b></td>
+        <td ng-if='event.event_stop > 0'><small>{{ event.stop[0] }}</small> <b>{{ event.stop[1] }}</b></td>
         <td ng-if='event.event_stop == 0' style='color: red'><b>Ongoing...</b></td>
         <td><b ng-if='event.event_stop == 0' style='color: red'>{{ reprTime(event.downtime) }}</b><span ng-if='event.event_stop > 0'>{{ reprTime(event.downtime) }}</span></td>
-        <td>{{ event.event_comment }}</td>
+        <td><input type='text' ng-model='event.event_comment' ng-change='update(event.rowid, event.event_comment)' /></td>
+        <!--<td><button ng-click='update(event.rowid, event.event_comment)'>Update</button></td>-->
+        <td><button ng-click='delete(event.rowid)'>Delete</button></td>
     </tr>
 </table>
 <div >{{ event }}</div>
