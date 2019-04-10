@@ -63,6 +63,8 @@
                 $scope.events[obj.rowid] = obj;
             }
             $scope.$apply();
+
+            window.scrollTo(0,document.body.scrollHeight);
         });
 
         function now() {
@@ -161,7 +163,7 @@
     </tr>
             
     <tr ng-if='event.event_stop == 0'>
-        <td><small><button ng-click='delete(event.rowid)'>D</button>{{ event.start[0] }}</small></td>
+        <td><small><button ng-click='delete(event.rowid)'>D</button> {{ event.start[0] }}</small></td>
         <td align='right'><small>{{ event.start[1] }} &mdash; Ongoing!</small></td>
     </tr>
     
