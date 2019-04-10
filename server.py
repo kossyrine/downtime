@@ -33,7 +33,8 @@ def dump():
 
     connection = sqlite3.connect('timestamps.db')
     cursor = connection.cursor()
-    cursor.execute(f'select rowid, * from downtime where event_start > {shift};')
+    ##cursor.execute(f'select rowid, * from downtime where event_start > {shift};')
+    cursor.execute(f'select rowid, * from downtime;')
     resp = cursor.fetchall()
     connection.close()
     
