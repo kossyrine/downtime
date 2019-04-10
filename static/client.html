@@ -1,10 +1,32 @@
 <html>
 <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
         <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js'></script>
         <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+
             table {
+                width: 100%;
+                max-width: 500px;
                 font-family: Consolas, monospace;
+            }
+
+            small {
+                font-size: 8pt;
+            }
+
+            input {
+                width: 100%;
+                font-family: Consolas, monospace;
+            }
+
+            .red {
+                color: white;
+                background-color: darkred;
             }
         </style>
 </head>
@@ -104,17 +126,44 @@
     });
 </script>
 
-<table width='100%'>
-    <tr ng-repeat='event in events'>
-        <td>{{ event.line_code.toUpperCase() }}</td>
-        <td><small>{{ event.start[0] }}</small> <b>{{ event.start[1] }}</b></td>
-        <td ng-if='event.event_stop > 0'><small>{{ event.stop[0] }}</small> <b>{{ event.stop[1] }}</b></td>
+<!--
+<small>{{ event.start[0] }}</small> start date
+<small>{{ event.stop[0] }}</small> end date
+-->
+
+<table cellspacing='0' cellpadding='4'>
+    <tr ng-class="{ 'red': event.event_stop == 0 }" ng-repeat-start='event in events'>
+        <td><b>{{ event.line_code.toUpperCase() }}</b></td>
+        <td align='right'><b>{{ reprTime(event.downtime) }}</b></td>
+
+<!--
+        <td> <b>{{ event.start[1] }}</b></td>
+        <td ng-if='event.event_stop > 0'><b>{{ event.stop[1] }}</b></td>
         <td ng-if='event.event_stop == 0' style='color: red'><b>Ongoing...</b></td>
         <td><b ng-if='event.event_stop == 0' style='color: red'>{{ reprTime(event.downtime) }}</b><span ng-if='event.event_stop > 0'>{{ reprTime(event.downtime) }}</span></td>
-        <td><input type='text' ng-model='event.event_comment' ng-blur='update(event.rowid, event.event_comment)' /></td>
-        <!--<td><button ng-click='update(event.rowid, event.event_comment)'>Update</button></td>-->
-        <td><button ng-click='delete(event.rowid)'>Delete</button></td>
+        <td><button ng-click='update(event.rowid, event.event_comment)'>Update</button></td>-->
+    
     </tr>
+
+    <tr>
+        <td colspan='2'><input type='text' ng-model='event.event_comment' ng-blur='update(event.rowid, event.event_comment)' /></td>
+        <!-- <button ng-click='delete(event.rowid)'>Delete</button> -->
+    </tr>
+    
+    <tr ng-if='event.event_stop > 0'>
+        <td><small>{{ event.start[0] }}</small></td>
+        <td align='right'><small>{{ event.start[1] }} &mdash; {{ event.stop[1] }}</small></td>
+    </tr>
+            
+    <tr ng-if='event.event_stop == 0'>
+        <td><small>{{ event.start[0] }}</small></td>
+        <td align='right'><small>{{ event.start[1] }} &mdash; Ongoing!</small></td>
+    </tr>
+    
+    <tr ng-repeat-end>
+        <td colspan='2'><hr /></td>
+    </tr>
+
 </table>
 <div >{{ event }}</div>
 
