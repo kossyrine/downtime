@@ -18,18 +18,22 @@ def now():
 def index():
     return flask_app.send_static_file('client.html')
 
+@flask_app.route('/report')
+def report():
+    return flask_app.send_static_file('client_report.html')
+
 @flask_app.route('/db')
 def dbdump():
     return flask_app.send_static_file('timestamps.db')
 
-@flask_app.route('/wipe')
-def wipe():
-    connection = sqlite3.connect('timestamps.db')
-    cursor = connection.cursor()
-    cursor.execute(f'delete from downtime;')
-    connection.commit()
-    connection.close()
-    return '200'
+#@flask_app.route('/wipe')
+#def wipe():
+#    connection = sqlite3.connect('timestamps.db')
+#    cursor = connection.cursor()
+#    cursor.execute(f'delete from downtime;')
+#    connection.commit()
+#    connection.close()
+#    return '200'
 
 @flask_app.route('/24hours')
 def dump():
